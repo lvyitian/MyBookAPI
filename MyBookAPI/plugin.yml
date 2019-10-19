@@ -1,0 +1,4 @@
+name: MyBookAPI
+version: 0.1
+main: top.dsbbs2.bookapi.MyBookAPI
+description: ABookAPI
