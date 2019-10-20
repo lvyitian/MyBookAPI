@@ -14,29 +14,30 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
 public class MyBookAPI extends JavaPlugin {
-	public static final String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",")
+	public static final String NMS_version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",")
 			.split(",")[3];
-	public static Class<?> CustomPacket;
-	public static Class<?> PacketSer;
-	public static Constructor<?> CustomCon;
-	public static Constructor<?> PacketSerCon;
-	public static Class<?> CraftPlayerClass;
-	public static Class<?> EntityPlayerClass;
-	public static Class<?> PlayerConnectionClass;
-	public static Class<?> PacketClass;
-	public static Method sendPacketMethod;
-	public static Field playerConnectionField;
-	public static Method getHandleMethod;
+	private static Class<?> CustomPacket;
+	private static Class<?> PacketSer;
+	private static Constructor<?> CustomCon;
+	private static Constructor<?> PacketSerCon;
+	private static Class<?> CraftPlayerClass;
+	private static Class<?> EntityPlayerClass;
+	private static Class<?> PlayerConnectionClass;
+	private static Class<?> PacketClass;
+	private static Method sendPacketMethod;
+	private static Field playerConnectionField;
+	private static Method getHandleMethod;
+	private static boolean isinit=false;
 	static {
 		try {
-			CustomPacket = Class.forName("net.minecraft.server." + version + ".PacketPlayOutCustomPayload");
-			PacketSer = Class.forName("net.minecraft.server." + version + ".PacketDataSerializer");
+			CustomPacket = Class.forName("net.minecraft.server." + NMS_version + ".PacketPlayOutCustomPayload");
+			PacketSer = Class.forName("net.minecraft.server." + NMS_version + ".PacketDataSerializer");
 			PacketSerCon = PacketSer.getConstructor(ByteBuf.class);
 			CustomCon = CustomPacket.getConstructor(String.class, PacketSer);
-			CraftPlayerClass = Class.forName("org.bukkit.craftbukkit." + version + ".entity.CraftPlayer");
-			EntityPlayerClass = Class.forName("net.minecraft.server." + version + ".EntityPlayer");
-			PlayerConnectionClass = Class.forName("net.minecraft.server." + version + ".PlayerConnection");
-			PacketClass = Class.forName("net.minecraft.server." + version + ".Packet");
+			CraftPlayerClass = Class.forName("org.bukkit.craftbukkit." + NMS_version + ".entity.CraftPlayer");
+			EntityPlayerClass = Class.forName("net.minecraft.server." + NMS_version + ".EntityPlayer");
+			PlayerConnectionClass = Class.forName("net.minecraft.server." + NMS_version + ".PlayerConnection");
+			PacketClass = Class.forName("net.minecraft.server." + NMS_version + ".Packet");
 			sendPacketMethod = PlayerConnectionClass.getMethod("sendPacket", PacketClass);
 			playerConnectionField = EntityPlayerClass.getField("playerConnection");
 			getHandleMethod = CraftPlayerClass.getMethod("getHandle", new Class<?>[0]);
@@ -44,9 +45,22 @@ public class MyBookAPI extends JavaPlugin {
 			throw new RuntimeException(new Error("Could not initialize MyBookAPI", e));
 		}
 	}
-
+	
+	{
+		if(!isinit)
+			isinit=true;
+		else
+			throw new RuntimeException("MyBookAPI has already initialized");
+	}
+	
+	@Override
+	public void onDisable()
+	{
+		isinit=false;
+	}
+	
 	@Deprecated
-	public void openBook_noExc(Player p, ItemStack book) {
+	public static void openBook_noExc(Player p, ItemStack book) {
 		try {
 			openBook(p, book);
 		} catch (Throwable e) {
@@ -54,7 +68,7 @@ public class MyBookAPI extends JavaPlugin {
 		}
 	}
 
-	public void openBook(Player p, ItemStack book) throws InstantiationException, IllegalAccessException,
+	public static void openBook(Player p, ItemStack book) throws InstantiationException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException, SecurityException {
 		int slot = p.getInventory().getHeldItemSlot();
 		ItemStack old = p.getInventory().getItem(slot);
